@@ -1,0 +1,145 @@
+@charset "UTF-8";
+/* ------------------------------ blms modal style -------------------------------- */
+/* 모달창이 열리면 스크롤 되지 않도록 body에 클래스 추가 */
+body.bloter-global-modal-noscroll{ overflow:hidden; }
+
+/* 모달 배경 */
+.bloter-global-modal-backdrop{
+	position:fixed;
+	top:0px;left:0px;right:0px;bottom:0px;
+	min-height:360px;
+	background: none repeat scroll 0% 0% #000;opacity: 0.7;
+	z-index: 14000;
+}
+
+.bloter-global-modal-backdrop.bloter-modal-absolute{
+	position:absolute;
+	min-height:0px;
+	transition:display 3s;
+	background: rgba(0, 0, 0, 0.2);
+}
+
+/* 모달 창 */
+.bloter-global-modal{
+	z-index:15000;position:fixed;
+	top:60px;left:15%;right:15%;z-index:15000;
+  	background: #fff;min-height:210px;overflow:auto;bottom: 30px;
+  	-webkit-animation: avia_modal_pop 0.3s 1 cubic-bezier(0.175, 0.885, 0.320, 1.275);
+  	-moz-animation: avia_modal_pop 0.3s 1 cubic-bezier(0.175, 0.885, 0.320, 1.275);
+  	-o-animation: avia_modal_pop 0.3s 1 cubic-bezier(0.175, 0.885, 0.320, 1.275);
+  	animation: avia_modal_pop 0.3s 1 cubic-bezier(0.175, 0.885, 0.320, 1.275);
+}
+
+
+.bloter-global-modal-inner{ height:100%; }
+.bloter-global-modal-inner,
+.bloter-global-modal-inner-header{ position:relative; }
+
+/* modal inner header */
+.bloter-global-modal-inner-header {
+	height:30px;
+	padding:10px 10px 10px 20px;
+	border-bottom: 1px solid #DFDFDF;
+	box-shadow: 0 4px 4px -4px rgba(0, 0, 0, 0.1);
+}
+
+.bloter-global-modal-inner-header h3{ margin:5px 0px;font-weight:normal; }
+
+/* inner header - close */
+.bloter-global-modal-close { font-size:16px;height:24px;width:24px;text-align:center;line-height:24px;float:right; }
+.bloter-global-modal-close:hover{ color:#C23232; }
+
+/* modal inner content */
+.bloter-global-modal-inner-content{
+	position:absolute;
+	top:51px;
+	right:0px;
+	bottom:61px;
+	left:0px;
+	overflow-y:scroll;
+	padding:15px;
+}
+
+/* inner footer */
+.bloter-global-modal-inner-footer{
+	position: absolute;
+	right:0px;
+	bottom:0px;
+	left:0px;
+	
+	text-align:right;
+	border-top: 1px solid #DFDFDF;
+	box-shadow: inset 0 4px 4px -4px rgba(0, 0, 0, 0.1);
+	background: #FCFCFC;
+	padding:15px;
+}
+
+.bloter-global-modal-inner-footer button{ margin-right:5px !important; }
+
+
+/* spinner */
+.bloter-spinner-wrap{ width:100%;height:100%;position:relative;background:rgba(26, 188, 156, 0.12); }
+
+.bloter-spinner {
+  width: 100%;
+  max-height: 30px;
+  height:50%;
+  text-align: center;
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+}
+
+.bloter-spinner > div {
+  background-color: #fff;
+  height: 100%;
+  margin:0px 1px 0px 0px;
+  width: 4px;
+  display: inline-block;
+  
+  -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+  animation: stretchdelay 1.2s infinite ease-in-out;
+}
+
+.bloter-spinner .rect2 {
+  -webkit-animation-delay: -1.1s;
+  animation-delay: -1.1s;
+}
+
+.bloter-spinner .rect3 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+.bloter-spinner .rect4 {
+  -webkit-animation-delay: -0.9s;
+  animation-delay: -0.9s;
+}
+
+.bloter-spinner .rect5 {
+  -webkit-animation-delay: -0.8s;
+  animation-delay: -0.8s;
+}
+
+@-webkit-keyframes stretchdelay {
+  0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+  20% { -webkit-transform: scaleY(1.0) }
+}
+
+@keyframes stretchdelay {
+  0%, 40%, 100% { 
+    transform: scaleY(0.4);
+    -webkit-transform: scaleY(0.4);
+  }  20% { 
+    transform: scaleY(1.0);
+    -webkit-transform: scaleY(1.0);
+  }
+}
+
+
+/* ----------------------------------- inner content - detail ---------------------- */
+
