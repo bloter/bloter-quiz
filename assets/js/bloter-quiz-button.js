@@ -128,8 +128,6 @@ function init_bloter_quiz( $content ){
         };
         
         quiz_container_array.push(quiz_container);
-		
-		console.log(quiz_container_array);
 	}
 	
 	
@@ -160,22 +158,27 @@ jQuery(document).ready(function($) {
 			
 			//replace from shortcode to an image placeholder
 			ed.on('BeforeSetcontent', function(event){ 
-				//event.content = replaceShortcodes( event.content );
 				var $content = event.content;
-							    
-			    $bloter_quiz_instance = init_bloter_quiz( $content);
-			    
-			    var editable_component = '<img class="mceItem bloter-quiz-editor-component" data-bloter-quiz="true" data-mce-resize="false" data-mce-placeholder="1" src="' + b_placeholder + '" />';
-			    
-			    bloter_quiz_shortcode_replace_str = editable_component;
-			    
-			    var quiz_container_pattern_all = /\[bloter_quiz_container([^\]]*)\](.*)\[\/bloter_quiz_container\]/gmi;
-			    
-			    event.content = $content.replace(quiz_container_pattern_all, editable_component);
+				$content = $.trim($content);
+				
+				if( $content.length != 0){
+					var quiz_container_pattern_all = /\[bloter_quiz_container([^\]]*)\](.*)\[\/bloter_quiz_container\]/gmi;
+					var replace_matches = quiz_container_pattern_all.exec($content);
+					
+					if( replace_matches != null ){
+						var editable_component = '<img class="mceItem bloter-quiz-editor-component" data-bloter-quiz="true" data-mce-resize="false" data-mce-placeholder="1" src="' + b_placeholder + '" />';
+						
+						$bloter_quiz_instance = init_bloter_quiz($content);
+				    	
+				    	event.content = $content.replace(quiz_container_pattern_all, editable_component);
+					}
+				}
 			});
 	
 			//replace from image placeholder to shortcode
 			ed.on('GetContent', function(event){
+				if( jQuery.type($bloter_quiz_instance) === 'undefined' ) { return; }
+				
 				var content = event.content;
 								
 				var r_str = '';
@@ -224,35 +227,25 @@ jQuery(document).ready(function($) {
 			    		if( obj_quiz_related_posts != '' ){
 			    			r_str += '[bloter_quiz_related_posts ids="'+ obj_quiz_related_posts +'"]';
 			    		}
-			    		
-			    		
-			    		
-			    		
 			    		r_str += '[/bloter_quiz_item]';
 			    	});
-					
 					r_str += '[/bloter_quiz_container]';
 				});
 				
-				//<img class="mceItem bloter-quiz-editor-component" data-mce-resize="false" data-mce-placeholder="1" src="' + b_placeholder + '" />
+				var editable_component = '<img class="mceItem bloter-quiz-editor-component" data-bloter-quiz="true" data-mce-resize="false" data-mce-placeholder="1" src="' + b_placeholder + '" />';
+				var replace_pattern = /(?:<p(?: [^>]+)?>)*(<img class="mceItem bloter-quiz-editor-component"[^>]+>)(?:<\/p>)*/g;
 				
+				var replace_matches = replace_pattern.exec(content);
 				
-				
-				event.content = content.replace( /(?:<p(?: [^>]+)?>)*(<img [^>]+>)(?:<\/p>)*/g, function( match, image ) {
-						var data = getAttr( image, 'data-bloter-quiz' );
-						
-						if ( data ) {
-							return '<p>'+ r_str +'</p>';
-						}
-						return match;
-					}); 
+				if( replace_matches != null ){
+					event.content = content.replace(replace_matches[0], '<p>'+ r_str +'</p>');
+				}
 				
 			});
 			
 			//open popup on placeholder double click
 			ed.on('Click',function(e) {
 				var cls  = e.target.className.indexOf('bloter-quiz-editor-component');
-				console.log(cls);
 				if ( e.target.className.indexOf('bloter-quiz-editor-component') > -1 ) {
 				
 					var wrap = $('#wpwrap');
@@ -277,130 +270,120 @@ jQuery(document).ready(function($) {
 					//modal_inner_header.append(modal_close);
 					modal_inner_header.append(modal_title_container);
 					
-					
-					
-					
-					
-					
-					
 					var r_str = '';
 				
-				r_str += '<div class="bloter-quiz-wrapper">';
-				r_str += '<div class="handle-button-container">';
-				r_str += '<button id="create-bloter-quiz-item" class="button button-primary button-large">';
-				r_str += 'Create Quiz Item';
-				r_str += '</button>';
-				r_str += '</div>';
-				r_str += '<ul class="bloter-quiz-sortable">';
-				
-				var $bloter_quiz_inst = $bloter_quiz_instance[0];
-												
-				var obj_quiz_items = $bloter_quiz_inst.items;
-				$.each(obj_quiz_items, function(qi_index, q_item){
-					
-					r_str += '<li id="bloter-quiz-item-'+ q_item.id +'" class="bloter-quiz-item ui-state-default">';
-					r_str += '<div class="bloter-quiz-item-box">';
-					r_str += '<div class="bloter-quiz-item-handlediv" title="토글하려면 클릭하세요"></div>';
-					r_str += '<h3 class="bloter-quiz-item-handle">';
-					r_str += '<span class="bloter-quiz-display">아이템</span>';
-					r_str += '<span title="아이템 삭제" class="bloter-quiz-item-remove glyphicon glyphicon-remove"></span>';
-					r_str += '</h3>';
-					r_str += '<div class="bloter-quiz-item-inside">';
-					r_str += '<div class="bloter-quiz-type-select">';
-					r_str += '<p>형식</p>';
-					if( q_item.type == 'multiple_choice' ){
-						r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-quiz" name="bloter-quiz-type-'+ q_item.id +'" checked="checked" value="mutiple_choice" /><label for="bloter-quiz-type-radio-quiz">퀴즈형</label>';
-						r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-survey" name="bloter-quiz-type-'+ q_item.id +'" value="survey" /><label for="bloter-quiz-type-radio-survey">설문형</label>';	
-					} else {
-						r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-quiz" name="bloter-quiz-type-'+ q_item.id +'" value="mutiple_choice" /><label for="bloter-quiz-type-radio-quiz">퀴즈형</label>';
-						r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-survey" name="bloter-quiz-type-'+ q_item.id +'" checked="checked" value="survey" /><label for="bloter-quiz-type-radio-survey">설문형</label>';
-					}
-					
+					r_str += '<div class="bloter-quiz-wrapper">';
+					r_str += '<div class="handle-button-container">';
+					r_str += '<button id="create-bloter-quiz-item" class="button button-primary button-large">';
+					r_str += 'Create Quiz Item';
+					r_str += '</button>';
 					r_str += '</div>';
-					r_str += '<div class="bloter-quiz-main-container">';
+					r_str += '<ul class="bloter-quiz-sortable">';
 					
-					
-					r_str += '<div class="bloter-quiz-item-part">';
-					
-					if( q_item.type == 'multiple_choice' ){
-						r_str += '<label for="bloter-quiz-content">퀴즈</label>';
-					} else {
-						r_str += '<label for="bloter-quiz-content">설문</label>';
-					}
-	
-					r_str += '<textarea class="bloter-quiz-content" name="bloter-quiz-content" id="bloter-quiz-content-'+ q_item.id +'" cols="30" rows="3">'+ q_item.message +'</textarea>';
-					r_str += '</div>';
-					r_str += '<div class="bloter-quiz-item-part">';
-					r_str += '<label for="bloter-quiz-image">이미지</label>';
-					r_str += '<p>';
-					r_str += '<input class="bloter-quiz-image bloter-quiz-image-'+ q_item.id +'" name="bloter-quiz-image" type="text" value="'+ q_item.image +'" />';
-					r_str += '</p>';
-					r_str += '<div id="bloter-quiz-image-controller-'+ q_item.id +'" data-controller="'+ q_item.id +'" class="bloter-quiz-image-controller">';
-					r_str += '<span class="glyphicon glyphicon-camera"></span> 미디어 라이브러리';
-					r_str += '</div>';
-					r_str += '</div>';
-					r_str += '<div class="bloter-quiz-item-part">';
-					r_str += '<label for="bloter-quiz-choice">선택지 <span class="glyphicon glyphicon-plus bloter-quiz-choice-add" data-qid="'+ q_item.id +'"></span></label>';
-					
-					
-					r_str += '<div class="bloter-quiz-choice-list">';
-					
-					r_str += '<ul id="bloter-quiz-choice-container-'+ q_item.id +'" data-qid="'+ q_item.id +'">';
-		
-					var input_choice_list = '';
-					$.each( q_item.choice_list, function(ic_index, ic_item){
-						r_str += '<li>';
-						r_str += '<span class="bloter-quiz-choice-number">'+ (ic_index+1) +'</span>';
-						r_str += '<input type="text" class="bloter-quiz-choice" name="bloter_quiz_choice" value="'+ ic_item.sub +'" />';
+					var $bloter_quiz_inst = $bloter_quiz_instance[0];
+													
+					var obj_quiz_items = $bloter_quiz_inst.items;
+					$.each(obj_quiz_items, function(qi_index, q_item){
 						
+						r_str += '<li id="bloter-quiz-item-'+ q_item.id +'" class="bloter-quiz-item ui-state-default">';
+						r_str += '<div class="bloter-quiz-item-box">';
+						r_str += '<div class="bloter-quiz-item-handlediv" title="토글하려면 클릭하세요"></div>';
+						r_str += '<h3 class="bloter-quiz-item-handle">';
+						r_str += '<span class="bloter-quiz-display">아이템</span>';
+						r_str += '<span title="아이템 삭제" class="bloter-quiz-item-remove glyphicon glyphicon-remove"></span>';
+						r_str += '</h3>';
+						r_str += '<div class="bloter-quiz-item-inside">';
+						r_str += '<div class="bloter-quiz-type-select">';
+						r_str += '<p>형식</p>';
 						if( q_item.type == 'multiple_choice' ){
-							if( ic_item.is_correct ){
-								r_str += '<input type="checkbox" class="bloter-quiz-correct" name="bloter_quiz_correct" checked="checked" /> 정답으로 설정';
-							} else {
-								r_str += '<input type="checkbox" class="bloter-quiz-correct" name="bloter_quiz_correct" /> 정답으로 설정';
-							}
+							r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-quiz" name="bloter-quiz-type-'+ q_item.id +'" checked="checked" value="mutiple_choice" /><label for="bloter-quiz-type-radio-quiz">퀴즈형</label>';
+							r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-survey" name="bloter-quiz-type-'+ q_item.id +'" value="survey" /><label for="bloter-quiz-type-radio-survey">설문형</label>';	
 						} else {
-							r_str += '<input type="checkbox" class="bloter-quiz-correct" name="bloter_quiz_correct" disabled="true" /> 정답으로 설정';
+							r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-quiz" name="bloter-quiz-type-'+ q_item.id +'" value="mutiple_choice" /><label for="bloter-quiz-type-radio-quiz">퀴즈형</label>';
+							r_str += '<input type="radio" class="bloter-quiz-type-radio bloter-quiz-type-radio-survey" name="bloter-quiz-type-'+ q_item.id +'" checked="checked" value="survey" /><label for="bloter-quiz-type-radio-survey">설문형</label>';
 						}
 						
-						r_str += '<span class="glyphicon glyphicon-minus bloter-quiz-choice-remove" title="선택지 삭제" data-qid="'+ q_item.id +'"></span>';
+						r_str += '</div>';
+						r_str += '<div class="bloter-quiz-main-container">';
+						
+						
+						r_str += '<div class="bloter-quiz-item-part">';
+						
+						if( q_item.type == 'multiple_choice' ){
+							r_str += '<label for="bloter-quiz-content">퀴즈</label>';
+						} else {
+							r_str += '<label for="bloter-quiz-content">설문</label>';
+						}
+		
+						r_str += '<textarea class="bloter-quiz-content" name="bloter-quiz-content" id="bloter-quiz-content-'+ q_item.id +'" cols="30" rows="3">'+ q_item.message +'</textarea>';
+						r_str += '</div>';
+						r_str += '<div class="bloter-quiz-item-part">';
+						r_str += '<label for="bloter-quiz-image">이미지</label>';
+						r_str += '<p>';
+						r_str += '<input class="bloter-quiz-image bloter-quiz-image-'+ q_item.id +'" name="bloter-quiz-image" type="text" value="'+ q_item.image +'" />';
+						r_str += '</p>';
+						r_str += '<div id="bloter-quiz-image-controller-'+ q_item.id +'" data-controller="'+ q_item.id +'" class="bloter-quiz-image-controller">';
+						r_str += '<span class="glyphicon glyphicon-camera"></span> 미디어 라이브러리';
+						r_str += '</div>';
+						r_str += '</div>';
+						r_str += '<div class="bloter-quiz-item-part">';
+						r_str += '<label for="bloter-quiz-choice">선택지 <span class="glyphicon glyphicon-plus bloter-quiz-choice-add" data-qid="'+ q_item.id +'"></span></label>';
+						
+						
+						r_str += '<div class="bloter-quiz-choice-list">';
+						
+						r_str += '<ul id="bloter-quiz-choice-container-'+ q_item.id +'" data-qid="'+ q_item.id +'">';
+			
+						var input_choice_list = '';
+						$.each( q_item.choice_list, function(ic_index, ic_item){
+							r_str += '<li>';
+							r_str += '<span class="bloter-quiz-choice-number">'+ (ic_index+1) +'</span>';
+							r_str += '<input type="text" class="bloter-quiz-choice" name="bloter_quiz_choice" value="'+ ic_item.sub +'" />';
+							
+							if( q_item.type == 'multiple_choice' ){
+								if( ic_item.is_correct ){
+									r_str += '<input type="checkbox" class="bloter-quiz-correct" name="bloter_quiz_correct" checked="checked" /> 정답으로 설정';
+								} else {
+									r_str += '<input type="checkbox" class="bloter-quiz-correct" name="bloter_quiz_correct" /> 정답으로 설정';
+								}
+							} else {
+								r_str += '<input type="checkbox" class="bloter-quiz-correct" name="bloter_quiz_correct" disabled="true" /> 정답으로 설정';
+							}
+							
+							r_str += '<span class="glyphicon glyphicon-minus bloter-quiz-choice-remove" title="선택지 삭제" data-qid="'+ q_item.id +'"></span>';
+							r_str += '</li>';
+						});
+						
+						
+						r_str += '</ul>';
+						r_str += '</div>';
+						//r_str += '<input type="text" class="bloter-quiz-choice" id="bloter-quiz-choice" name="bloter-quiz-choice" value="'+ input_choice_list +'" />';
+						r_str += '</div>';
+						r_str += '<div class="bloter-quiz-item-part">';
+						
+						if( q_item.type == 'multiple_choice' ){
+							r_str += '<label for="bloter-quiz-answer">정답 해설</label>';
+						} else {
+							r_str += '<label for="bloter-quiz-answer">설문 메시지</label>';
+						}
+						
+						r_str += '<textarea class="bloter-quiz-answer" name="bloter-quiz-answer" id="bloter-quiz-answer-'+ q_item.id +'" cols="30" rows="3">'+ q_item.answer_message +'</textarea>';
+						r_str += '</div>';
+						r_str += '<div class="bloter-quiz-item-part">';
+						r_str += '<label for="bloter-quiz-related">관련기사</label>';
+						r_str += '<input type="text" class="bloter-quiz-related" id="bloter-quiz-related" name="bloter-quiz-related" value="'+ q_item.related_posts +'" />';
+						r_str += '</div>';
+						
+					
+						r_str += '</div>';
+						r_str += '</div>';
+						r_str += '</div>';
 						r_str += '</li>';
 					});
-					
-					
+	
+						
 					r_str += '</ul>';
 					r_str += '</div>';
-					//r_str += '<input type="text" class="bloter-quiz-choice" id="bloter-quiz-choice" name="bloter-quiz-choice" value="'+ input_choice_list +'" />';
-					r_str += '</div>';
-					r_str += '<div class="bloter-quiz-item-part">';
-					
-					if( q_item.type == 'multiple_choice' ){
-						r_str += '<label for="bloter-quiz-answer">정답 해설</label>';
-					} else {
-						r_str += '<label for="bloter-quiz-answer">설문 메시지</label>';
-					}
-					
-					r_str += '<textarea class="bloter-quiz-answer" name="bloter-quiz-answer" id="bloter-quiz-answer-'+ q_item.id +'" cols="30" rows="3">'+ q_item.answer_message +'</textarea>';
-					r_str += '</div>';
-					r_str += '<div class="bloter-quiz-item-part">';
-					r_str += '<label for="bloter-quiz-related">관련기사</label>';
-					r_str += '<input type="text" class="bloter-quiz-related" id="bloter-quiz-related" name="bloter-quiz-related" value="'+ q_item.related_posts +'" />';
-					r_str += '</div>';
-					
-				
-					r_str += '</div>';
-					r_str += '</div>';
-					r_str += '</div>';
-					r_str += '</li>';
-				});
-
-					
-				r_str += '</ul>';
-				r_str += '</div>';
-					
-					
-					
-					
 					
 					modal_inner_content.append(r_str);
 					
@@ -486,8 +469,6 @@ jQuery(document).ready(function($) {
 						
 						$output += $quiz_content + '[/bloter_quiz_message]';
 						
-						//console.log($quiz_choice_list);
-						
 						var fix_quiz_chioce_list = $(this).find('.bloter-quiz-choice-list ul li');
 						var fix_quiz_chioce_list_count = fix_quiz_chioce_list.size();
 						
@@ -512,25 +493,8 @@ jQuery(document).ready(function($) {
 						}
 						
 						if( $quiz_related_posts != '' ){
-							console.log($quiz_related_posts);
 							$output += '[bloter_quiz_related_posts ids="'+ $quiz_related_posts  +'"]';
 						}
-						
-						/*
-						if( $quiz_choice_list.length > 0 ){
-							$output += '[bloter_quiz_choice_list]';
-							$.each($quiz_choice_list, function($index, $item){
-								if( $item.indexOf("(c)") > 0 ){
-									$item = $item.replace("(c)", ''); 
-									$output += '[bloter_quiz_choice num="'+ ($index+1) +'" sub="'+ $item +'" correct="ok"]';	
-								} else {
-									$output += '[bloter_quiz_choice num="'+ ($index+1) +'" sub="'+ $item +'"]';
-								}
-																
-							});
-							$output += '[/bloter_quiz_choice_list]';
-						}
-						*/
 						
 						if( $quiz_answer.trim() != '' ){
 							$output += '[bloter_quiz_answer]'+ $quiz_answer +'[/bloter_quiz_answer]';	
@@ -728,8 +692,6 @@ jQuery(document).ready(function($) {
 						
 						$output += $quiz_content + '[/bloter_quiz_message]';
 						
-						//console.log($quiz_choice_list);
-						
 						var fix_quiz_chioce_list = $(this).find('.bloter-quiz-choice-list ul li');
 						var fix_quiz_chioce_list_count = fix_quiz_chioce_list.size();
 						
@@ -754,25 +716,9 @@ jQuery(document).ready(function($) {
 						}
 						
 						if( $quiz_related_posts != '' ){
-							console.log($quiz_related_posts);
 							$output += '[bloter_quiz_related_posts ids="'+ $quiz_related_posts  +'"]';
 						}
 						
-						/*
-						if( $quiz_choice_list.length > 0 ){
-							$output += '[bloter_quiz_choice_list]';
-							$.each($quiz_choice_list, function($index, $item){
-								if( $item.indexOf("(c)") > 0 ){
-									$item = $item.replace("(c)", ''); 
-									$output += '[bloter_quiz_choice num="'+ ($index+1) +'" sub="'+ $item +'" correct="ok"]';	
-								} else {
-									$output += '[bloter_quiz_choice num="'+ ($index+1) +'" sub="'+ $item +'"]';
-								}
-																
-							});
-							$output += '[/bloter_quiz_choice_list]';
-						}
-						*/
 						
 						if( $quiz_answer.trim() != '' ){
 							$output += '[bloter_quiz_answer]'+ $quiz_answer +'[/bloter_quiz_answer]';	
